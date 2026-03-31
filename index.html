@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUSS.IO | Борлуулалтын систем & Нэхэмжлэх</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF үүсгэх сан -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --tuss-blue: #0047FF;
+            --tuss-dark: #00103D;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+        }
+
+        .custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #E2E8F0;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            background: var(--tuss-blue);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s;
+        }
+
+        .custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 16, 61, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 2rem;
+            max-width: 850px; width: 100%;
+            position: relative;
+            max-height: 95vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* PDF capture area */
+        #pdf-invoice-wrapper {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 800px;
+            background: white;
+            padding: 0;
+            margin: 0;
+            visibility: visible;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.8rem;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--tuss-blue);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: #64748b;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="antialiased text-left">
+
+    <div class="min-h-screen py-10 md:py-16 px-4">
+        <div class="max-w-6xl mx-auto">
+            
+            <!-- Logo & Brand Header -->
+            <header class="flex flex-col items-center mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-[#0047FF] p-3 rounded-2xl shadow-xl shadow-blue-100">
+                        <i data-lucide="shield-check" class="text-white w-9 h-9"></i>
+                    </div>
+                    <h1 class="text-5xl font-black text-[#00103D] tracking-tighter uppercase italic">TUSS.IO</h1>
+                </div>
+                <div class="h-1.5 w-24 bg-[#0047FF] rounded-full mb-4"></div>
+                <h2 class="text-xl font-bold text-slate-400 uppercase tracking-[0.4em]">Борлуулалтын систем</h2>
+                <p class="text-sm text-slate-500 font-medium mt-2 text-center italic">Хиймэл оюун ухаанд суурилсан комплаенс удирдлагын цогц шийдэл.</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left Section: Sliders -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50">
+                        <h3 class="text-xl font-black mb-10 flex items-center gap-3 text-[#00103D]">
+                            <i data-lucide="sliders" class="text-[#0047FF] w-6 h-6"></i> Багцаа сонгоно уу
+                        </h3>
+
+                        <div class="space-y-8">
+                            <!-- Starter -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <button onclick="openPlanDetails('Starter')" class="font-bold text-slate-700 hover:text-blue-600 transition-colors flex items-center gap-1">
+                                        Starter (24,000₮) <i data-lucide="info" class="w-4 h-4 opacity-30"></i>
+                                    </button>
+                                    <span id="val-Starter" class="text-2xl font-black text-blue-600">0</span>
+                                </div>
+                                <input type="range" id="sld-Starter" min="0" max="500" value="0" class="custom-slider" oninput="update('Starter', this.value)">
+                            </div>
+
+                            <!-- Standard -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <button onclick="openPlanDetails('Standard')" class="font-bold text-slate-700 hover:text-blue-600 transition-colors flex items-center gap-1">
+                                        Standard (33,000₮) <i data-lucide="info" class="w-4 h-4 opacity-30"></i>
+                                    </button>
+                                    <span id="val-Standard" class="text-2xl font-black text-indigo-600">0</span>
+                                </div>
+                                <input type="range" id="sld-Standard" min="0" max="500" value="0" class="custom-slider" oninput="update('Standard', this.value)">
+                            </div>
+
+                            <!-- Premium -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <button onclick="openPlanDetails('Premium')" class="font-bold text-slate-700 hover:text-blue-600 transition-colors flex items-center gap-1">
+                                        Premium (55,000₮) <i data-lucide="info" class="w-4 h-4 opacity-30"></i>
+                                    </button>
+                                    <span id="val-Premium" class="text-2xl font-black text-blue-700">0</span>
+                                </div>
+                                <input type="range" id="sld-Premium" min="0" max="500" value="0" class="custom-slider" oninput="update('Premium', this.value)">
+                            </div>
+
+                            <!-- Compliance -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <button onclick="openPlanDetails('Compliance')" class="font-bold text-slate-700 hover:text-blue-600 transition-colors flex items-center gap-1">
+                                        Compliance (350,000₮) <i data-lucide="info" class="w-4 h-4 opacity-30"></i>
+                                    </button>
+                                    <span id="val-Compliance" class="text-2xl font-black text-purple-700">0</span>
+                                </div>
+                                <input type="range" id="sld-Compliance" min="0" max="100" value="0" class="custom-slider" oninput="update('Compliance', this.value)">
+                            </div>
+
+                            <!-- Duration Highlighted -->
+                            <div class="p-6 rounded-[2rem] bg-blue-50 border-2 border-blue-100 shadow-sm space-y-6">
+                                <div class="flex justify-between items-center text-left">
+                                    <label class="text-xs font-black text-blue-900 uppercase tracking-widest flex items-center gap-2">
+                                        <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i> Гэрээний хугацаа:
+                                    </label>
+                                    <span id="val-Months" class="text-2xl font-black text-[#0047FF]">1 Сар</span>
+                                </div>
+                                <input type="range" id="sld-Months" min="1" max="24" value="1" class="custom-slider" oninput="update('Months', this.value)">
+                                <div class="flex justify-between text-[10px] text-blue-400 font-bold uppercase tracking-widest">
+                                    <span>1 Сар</span>
+                                    <span>12 Сар (-18% хөнгөлөлт)</span>
+                                    <span>24 Сар</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Section: Summary & Action -->
+                <div class="lg:col-span-5">
+                    <div class="bg-[#00103D] text-white rounded-[3.5rem] p-8 md:p-10 shadow-2xl shadow-blue-900/40 overflow-hidden flex flex-col min-h-[600px]">
+                        <div class="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                        
+                        <h3 class="text-sm font-black mb-10 border-b border-white/5 pb-4 uppercase tracking-widest text-slate-500 text-center">Захиалгын нэгтгэл</h3>
+                        
+                        <div id="summary-container" class="space-y-3 mb-6">
+                            <p class="text-slate-500 text-center py-4 italic opacity-50 text-xs">Багцаа сонгоно уу...</p>
+                        </div>
+
+                        <!-- Organization & Invoice Inputs -->
+                        <div id="invoice-inputs" class="hidden space-y-5 mb-8 pt-6 border-t border-white/5 animate-in fade-in duration-500 text-left">
+                            <div>
+                                <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2">Төлөгчийн мэдээлэл</p>
+                                <div class="space-y-2">
+                                    <input type="text" id="input-org" placeholder="Төлөгч / Invoice to (Байгууллагын нэр)" class="input-field">
+                                    <input type="text" id="input-rd" placeholder="Төлөгчийн РД" class="input-field">
+                                    <input type="text" id="input-name" placeholder="Хэрэглэгчийн нэр" class="input-field">
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2">Хүлээн авагч (Банкны мэдээлэл)</p>
+                                <div class="space-y-2">
+                                    <input type="text" id="input-receiver-name" value="ТУС Солюшн ХХК" placeholder="Хүлээн авагчийн нэр" class="input-field">
+                                    <input type="text" id="input-receiver-bank" value="Худалдаа Хөгжлийн Банк" placeholder="Банкны нэр" class="input-field">
+                                    <input type="text" id="input-receiver-acc" value="MN59 0004 0004 3901 1391" placeholder="Дансны дугаар" class="input-field">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[8px] uppercase text-slate-400 font-bold ml-1">Огноо</label>
+                                    <input type="date" id="input-inv-date" class="input-field">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[8px] uppercase text-slate-400 font-bold ml-1">Төлөх хугацаа</label>
+                                    <input type="date" id="input-due-date" class="input-field">
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2">Бэлтгэсэн ажилтан</p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <input type="text" id="input-position" placeholder="Албан тушаал" class="input-field">
+                                    <input type="text" id="input-preparer" placeholder="Нэр" class="input-field">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto text-left">
+                            <p class="text-blue-400 text-[10px] font-black uppercase tracking-[0.4em] mb-1">Нийт төлөх дүн</p>
+                            <div id="display-total" class="text-4xl font-black text-white tracking-tighter mb-8 leading-none">0 ₮</div>
+                            
+                            <div id="action-area" class="space-y-3">
+                                <a id="btn-demo" href="https://www.tuss.io/get-demo" target="_blank" class="w-full bg-white/10 hover:bg-white/20 text-white font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-3 text-base">
+                                    Демо хүсэх <i data-lucide="external-link" class="w-4 h-4"></i>
+                                </a>
+                                <button id="btn-view" onclick="showInvoicePreview()" class="hidden w-full bg-white text-[#00103D] font-black py-4 rounded-2xl transition-all hover:bg-slate-100 flex items-center justify-center gap-3 text-base">
+                                    Нэхэмжлэх харах <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <div class="flex items-center justify-center gap-4 mt-6 opacity-60 hover:opacity-100 transition-opacity">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" id="chk-vat" checked onchange="calculate()" class="w-4 h-4 rounded border-white/20 bg-transparent text-blue-600 focus:ring-0">
+                                    <span class="text-[9px] font-bold text-slate-400 group-hover:text-white transition-colors uppercase tracking-widest">НӨАТ 10% тооцох</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm flex items-center gap-4">
+                        <i data-lucide="gift" class="w-6 h-6 text-emerald-600"></i>
+                        <p class="text-xs text-slate-600 font-bold leading-tight">Нийт <span id="display-guests" class="underline font-black text-emerald-600 text-base">0</span> зочин аккаунт ҮНЭГҮЙ.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="main-modal" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button onclick="closeModal()" class="absolute top-8 right-8 p-3 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors text-slate-500 z-10">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div id="modal-body" class="p-10 md:p-14"></div>
+        </div>
+    </div>
+
+    <!-- Hidden PDF Layout (Optimized SJ-10 Format) -->
+    <div id="pdf-invoice-wrapper">
+        <div id="pdf-content-to-capture" style="padding: 40px; background: white; color: #111; font-family: 'Inter', sans-serif; line-height: 1.4;">
+            
+            <!-- Compact Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #0047FF; padding-bottom: 12px; margin-bottom: 25px;">
+                <div>
+                    <h1 style="color: #0047FF; font-size: 24px; font-weight: 900; margin: 0; letter-spacing: -0.5px;">TUSS.IO</h1>
+                    <p style="margin: 2px 0 0 0; font-size: 9.5px; color: #555; font-weight: 600; max-width: 400px;">Хиймэл оюун ухаанд суурилсан комплаенс удирдлагын цогц шийдэл.</p>
+                </div>
+                <div style="text-align: right;">
+                    <h2 style="font-size: 18px; font-weight: 800; margin: 0; color: #111; text-transform: uppercase; letter-spacing: 1px;">НЭХЭМЖЛЭХ</h2>
+                    <p style="margin: 2px 0 0 0; font-size: 10px; color: #666; font-weight: 600;">Огноо: <span id="pdf-date"></span></p>
+                </div>
+            </div>
+
+            <!-- Info Grid -->
+            <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 30px; margin-bottom: 25px;">
+                <!-- Payer Info -->
+                <div style="text-align: left; padding: 15px; border: 1px solid #F1F5F9; border-radius: 12px; background: #F8FAFC;">
+                    <h4 style="font-size: 8.5px; text-transform: uppercase; color: #94A3B8; margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;">Төлөгчийн мэдээлэл / Payer info:</h4>
+                    <p style="margin: 0; font-weight: 800; font-size: 13px; color: #00103D;"><span id="pdf-org"></span></p>
+                    <p style="margin: 4px 0; font-size: 10.5px; color: #475569;">РД: <span id="pdf-rd"></span></p>
+                    <p style="margin: 4px 0; font-size: 10.5px; color: #475569;">Төлбөр төлөх хугацаа: <span id="pdf-due-date-val" style="font-weight: 600; color: #000;"></span></p>
+                </div>
+                <!-- Receiver Info -->
+                <div style="text-align: left; padding: 15px; border: 1px solid #F1F5F9; border-radius: 12px;">
+                    <h4 style="font-size: 8.5px; text-transform: uppercase; color: #94A3B8; margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;">Хүлээн авагчийн мэдээлэл / Bank info:</h4>
+                    <p style="margin: 0; font-weight: 800; font-size: 13px; color: #000;"><span id="pdf-receiver-name"></span></p>
+                    <p style="margin: 4px 0; font-size: 10.5px; color: #475569;">Данс: <span id="pdf-receiver-acc" style="font-weight: 700; color: #000;"></span></p>
+                    <p style="margin: 4px 0; font-size: 10.5px; color: #475569;">Банк: <span id="pdf-receiver-bank"></span></p>
+                    <p style="margin: 4px 0; font-size: 8.5px; color: #64748B; line-height: 1.3;">16-р хороо, Амарсанаагийн гудамж 12/1, <br>Колорадо бизнес төв, 308 тоот</p>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #F1F5F9; font-size: 10.5px;">
+                <thead>
+                    <tr style="background: #F8FAFC; border-bottom: 2px solid #0047FF;">
+                        <th style="padding: 10px; text-align: left; font-weight: 800; text-transform: uppercase; border-right: 1px solid #F1F5F9;">Үйлчилгээний нэр</th>
+                        <th style="padding: 10px; text-align: center; font-weight: 800; text-transform: uppercase; border-right: 1px solid #F1F5F9;">Хугацаа /Сар/</th>
+                        <th style="padding: 10px; text-align: center; font-weight: 800; text-transform: uppercase; border-right: 1px solid #F1F5F9;">Тоо /Хэрэглэгч/</th>
+                        <th style="padding: 10px; text-align: right; font-weight: 800; text-transform: uppercase; border-right: 1px solid #F1F5F9;">Нэгж үнэ</th>
+                        <th style="padding: 10px; text-align: right; font-weight: 800; text-transform: uppercase;">Нийт</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-table-items"></tbody>
+            </table>
+
+            <!-- Summary Area -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <!-- Word Amount -->
+                <div style="max-width: 380px;">
+                    <p style="font-size: 8.5px; text-transform: uppercase; color: #94A3B8; font-weight: 800; margin-bottom: 4px;">Төлбөр төлөх дүн /үсгээр/:</p>
+                    <p id="pdf-amount-words" style="font-size: 10.5px; font-weight: 600; font-style: italic; color: #1e293b; line-height: 1.4;"></p>
+                </div>
+                <!-- Sum Numbers -->
+                <div style="width: 280px; padding-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px;">
+                        <span style="color: #64748B;">Суурь дүн:</span> <span id="pdf-raw-total" style="font-weight: 600;"></span>
+                    </div>
+                    <div id="pdf-vol-disc-row" style="display: none; justify-content: space-between; margin-bottom: 6px; font-size: 11px; color: #059669;">
+                        <span style="font-weight: 600;">Олон хэрэглэгчийн хөнгөлөлт:</span> <span id="pdf-vol-disc" style="font-weight: 700;"></span>
+                    </div>
+                    <div id="pdf-year-disc-row" style="display: none; justify-content: space-between; margin-bottom: 6px; font-size: 11px; color: #059669;">
+                        <span style="font-weight: 600;">Хугацааны хөнгөлөлт (-18%):</span> <span id="pdf-year-disc" style="font-weight: 700;"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px;">
+                        <span style="color: #64748B;">НӨАТ (10%):</span> <span id="pdf-vat-total" style="font-weight: 600;"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-top: 2px solid #0047FF; padding-top: 10px; margin-top: 10px;">
+                        <span style="font-weight: 900; font-size: 15px; color: #0047FF; text-transform: uppercase;">Нийт төлөх:</span>
+                        <span id="pdf-grand-total" style="font-weight: 900; font-size: 15px; color: #0047FF;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Signatures -->
+            <div style="margin-top: 45px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; font-size: 10px;">
+                <div style="border-top: 1px dashed #E2E8F0; padding-top: 12px; text-align: left;">
+                    <p style="font-weight: 800; color: #64748B; margin-bottom: 3px;">Нэхэмжлэх бэлтгэсэн:</p>
+                    <p style="font-weight: 700; margin: 0; font-size: 10.5px;"><span id="pdf-preparer-pos"></span> <span id="pdf-preparer"></span></p>
+                    <p style="margin: 3px 0 0 0; color: #666; font-size: 9px;">Цахим хуудас: www.tussolution.mn</p>
+                </div>
+                <div style="text-align: center; align-self: flex-end;">
+                    <div style="border-bottom: 1px solid #333; width: 130px; margin: 0 auto 8px auto;"></div>
+                    <p style="font-size: 8px; color: #94A3B8; text-transform: uppercase;">(Гарын үсэг, тамга)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PRICES = { Starter: 24000, Standard: 33000, Premium: 55000, Compliance: 350000 };
+        const state = { Starter: 0, Standard: 0, Premium: 0, Compliance: 0, Months: 1 };
+
+        const DETAILS = {
+            Starter: { icon: "rocket", title: "Starter", desc: "Ажлаа системчилж эхлэх суурь.", features: ["Ажил модуль", "7 хоног модуль", "Хэрэглэгчийн профайл", "Дурын 1 модуль"] },
+            Standard: { icon: "sparkles", title: "Standard", desc: "Өсөлтөд тэмүүлж буй компаниудад.", features: ["OKR модуль", "HR модуль", "Оношилгоо", "Dashboard"] },
+            Premium: { icon: "zap", title: "Premium", desc: "Цогц системчлэл & Зөвлөх үйлчилгээ.", features: ["Бүх модулиуд", "Чанартай зөвлөх", "AI Чатбот", "Эрхийн тохиргоо"] },
+            Compliance: { icon: "shield-check", title: "Compliance", desc: "Эрсдлийн удирдлага & AI.", features: ["Эрсдлийн удирдлага", "AI GAP шинжилгээ", "API холболт", "Комплаенс"] }
+        };
+
+        function safeSetText(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        }
+
+        window.onload = () => {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('input-inv-date');
+            const dueDateInput = document.getElementById('input-due-date');
+            if(dateInput) dateInput.value = today;
+            if(dueDateInput) {
+                const future = new Date();
+                future.setDate(future.getDate() + 7);
+                dueDateInput.value = future.toISOString().split('T')[0];
+            }
+            lucide.createIcons();
+            calculate();
+        }
+
+        function update(key, val) {
+            state[key] = parseInt(val);
+            const label = document.getElementById(`val-${key}`);
+            if (label) {
+                if (key === 'Months') {
+                    const years = val / 12;
+                    if (val < 12) label.innerText = val + ' Сар';
+                    else if (val == 12) label.innerText = '1 Жил';
+                    else if (val == 24) label.innerText = '2 Жил';
+                    else label.innerText = (years % 1 === 0 ? years.toFixed(0) : years.toFixed(1)) + ' Жил';
+                } else label.innerText = val;
+            }
+            calculate();
+        }
+
+        function calculate() {
+            const container = document.getElementById('summary-container');
+            const totalEl = document.getElementById('display-total');
+            const inputs = document.getElementById('invoice-inputs');
+            const guestsDisplay = document.getElementById('display-guests');
+            
+            const btnDemo = document.getElementById('btn-demo');
+            const btnView = document.getElementById('btn-view');
+
+            if (!container) return;
+            container.innerHTML = '';
+            
+            let rawTotal = 0;
+            let totalAccounts = 0;
+            let hasSelection = false;
+
+            ['Starter', 'Standard', 'Premium', 'Compliance'].forEach(p => {
+                if (state[p] > 0) {
+                    const lineTotal = state[p] * PRICES[p] * state.Months;
+                    rawTotal += lineTotal;
+                    totalAccounts += state[p];
+                    hasSelection = true;
+                    container.innerHTML += `<div class="flex justify-between items-center text-sm font-medium animate-in slide-in-from-right-2"><span class="text-slate-400 flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div> ${p} багц (${state[p]} акк):</span><span class="font-mono text-white">${format(lineTotal)}</span></div>`;
+                }
+            });
+
+            if (!hasSelection) {
+                container.innerHTML = '<p class="text-slate-500 text-center py-4 italic opacity-50 text-xs">Багцаа сонгоно уу...</p>';
+                if (inputs) inputs.classList.add('hidden');
+                if (btnDemo) btnDemo.classList.remove('hidden');
+                if (btnView) btnView.classList.add('hidden');
+                if (totalEl) totalEl.innerText = '0 ₮';
+                if (guestsDisplay) guestsDisplay.innerText = '0';
+                return;
+            }
+
+            if (inputs) inputs.classList.remove('hidden');
+            if (btnDemo) btnDemo.classList.add('hidden');
+            if (btnView) btnView.classList.remove('hidden');
+
+            let volRate = totalAccounts >= 300 ? 0.30 : totalAccounts >= 200 ? 0.20 : totalAccounts >= 100 ? 0.10 : 0;
+            const volDiscount = rawTotal * volRate;
+            let afterVol = rawTotal - volDiscount;
+
+            let yearRate = state.Months >= 12 ? 0.18 : 0;
+            const yearDiscount = afterVol * yearRate;
+            let subTotalFinal = afterVol - yearDiscount;
+
+            const chkVatInput = document.getElementById('chk-vat');
+            const isVat = chkVatInput ? chkVatInput.checked : true;
+            const vatAmt = isVat ? subTotalFinal * 0.1 : 0;
+            const finalTotal = subTotalFinal + vatAmt;
+
+            if (volDiscount > 0) container.innerHTML += `<div class="p-2 bg-blue-500/10 rounded-xl text-blue-400 text-[9px] uppercase font-black flex justify-between"><span>Олон хэрэглэгч (-${volRate*100}%):</span><span>-${format(volDiscount)}</span></div>`;
+            if (yearDiscount > 0) container.innerHTML += `<div class="p-2 bg-emerald-500/10 rounded-xl text-emerald-400 text-[9px] uppercase font-black flex justify-between"><span>Хугацаа (-18%):</span><span>-${format(yearDiscount)}</span></div>`;
+
+            if (totalEl) totalEl.innerText = format(finalTotal);
+            if (guestsDisplay) guestsDisplay.innerText = totalAccounts;
+            
+            return { rawTotal, volDiscount, volRate, yearDiscount, vatAmt, finalTotal, totalAccounts };
+        }
+
+        function format(v) { return new Intl.NumberFormat('mn-MN').format(Math.round(v)) + ' ₮'; }
+
+        function numberToMongolianWords(num) {
+            if (num === 0) return "тэг";
+            const units = ["", "нэг", "хоёр", "гурав", "дөрөв", "тав", "зургаа", "долоо", "найм", "ес"];
+            const tens = ["", "арван", "хорин", "гучин", "дөчин", "тавин", "жаран", "далан", "наян", "ерэн"];
+            const scales = ["", "мянга", "сая", "тэрбум"];
+            
+            function convertChunk(n) {
+                let s = "";
+                if (n >= 100) {
+                    s += units[Math.floor(n / 100)] + " зуун ";
+                    n %= 100;
+                }
+                if (n >= 10) {
+                    s += tens[Math.floor(n / 10)] + " ";
+                    n %= 10;
+                }
+                if (n > 0) {
+                    s += units[n] + " ";
+                }
+                return s.trim();
+            }
+
+            let word = "";
+            let scaleIdx = 0;
+            let tempNum = num;
+            while (tempNum > 0) {
+                let chunk = tempNum % 1000;
+                if (chunk > 0) {
+                    word = convertChunk(chunk) + " " + scales[scaleIdx] + " " + word;
+                }
+                tempNum = Math.floor(tempNum / 1000);
+                scaleIdx++;
+            }
+            return word.trim().charAt(0).toUpperCase() + word.trim().slice(1);
+        }
+
+        function showInvoicePreview() {
+            const org = document.getElementById('input-org')?.value || "Байгууллагын нэр";
+            const name = document.getElementById('input-name')?.value || "Хэрэглэгчийн нэр";
+            const rName = document.getElementById('input-receiver-name')?.value || "ТУС Солюшн ХХК";
+            const rBank = document.getElementById('input-receiver-bank')?.value || "";
+            const rAcc = document.getElementById('input-receiver-acc')?.value || "";
+            
+            const data = calculate();
+            const body = document.getElementById('modal-body');
+            if(!body) return;
+            
+            let itemsHtml = '';
+            ['Starter', 'Standard', 'Premium', 'Compliance'].forEach(p => {
+                if (state[p] > 0) {
+                    itemsHtml += `<div class="flex justify-between py-2 border-b border-slate-100 text-left text-xs font-medium text-slate-700"><span>${p} багц (${state[p]} хэрэглэгч x ${state.Months} сар)</span><span class="font-bold text-slate-900">${format(state[p] * PRICES[p] * state.Months)}</span></div>`;
+                }
+            });
+
+            body.innerHTML = `
+                <div class="border-b-2 border-blue-600 pb-4 mb-6 flex justify-between items-end text-left text-[#111]">
+                    <div><h2 class="text-xl font-black text-slate-800">НЭХЭМЖЛЭХ ХАРАХ</h2><p class="text-blue-600 font-bold uppercase text-[8px] tracking-widest mt-1">Preview Mode</p></div>
+                    <p class="text-[10px] text-slate-400 font-bold">${new Date().toLocaleDateString('mn-MN')}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-10 mb-8 text-left text-[#111] text-xs">
+                    <div><p class="text-[8px] uppercase text-slate-400 font-black mb-1">Төлөгч / Invoice to:</p><p class="font-black text-base">${org}</p><p class="text-xs text-slate-500">${name}</p></div>
+                    <div class="text-right"><p class="text-[8px] uppercase text-slate-400 font-black mb-1">Хүлээн авагч:</p><p class="font-black">${rName}</p><p class="text-[10px]">${rBank} - ${rAcc}</p></div>
+                </div>
+                <div class="mb-8">${itemsHtml}</div>
+                <div class="bg-slate-50 p-6 rounded-xl space-y-3 text-left text-[#111] text-xs">
+                    <div class="flex justify-between"><span>Суурь дүн:</span><span class="font-bold">${format(data.rawTotal)}</span></div>
+                    <div class="flex justify-between text-blue-600 font-medium"><span>Нийт хөнгөлөлт:</span><span class="font-bold">-${format(data.volDiscount + data.yearDiscount)}</span></div>
+                    <div class="flex justify-between text-xs font-medium"><span>НӨАТ (10%):</span><span class="font-bold">${format(data.vatAmt)}</span></div>
+                    <div class="flex justify-between text-xl font-black text-blue-600 pt-3 border-t border-blue-100 uppercase tracking-tighter"><span>НИЙТ ТӨЛӨХ:</span><span>${format(data.finalTotal)}</span></div>
+                </div>
+                <button onclick="downloadInvoicePDF()" class="w-full mt-10 bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl font-black shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all text-sm uppercase tracking-wider">PDF ТАТАХ АВАХ <i data-lucide="download" class="w-4 h-4"></i></button>
+            `;
+            lucide.createIcons();
+            document.getElementById('main-modal').style.display = 'flex';
+        }
+
+        async function downloadInvoicePDF() {
+            const data = calculate();
+            const orgVal = document.getElementById('input-org')?.value || "Customer Name";
+            const rdVal = document.getElementById('input-rd')?.value || "---";
+            const dateVal = document.getElementById('input-inv-date')?.value || new Date().toISOString().split('T')[0];
+            const dueVal = document.getElementById('input-due-date')?.value || "---";
+            const prepVal = document.getElementById('input-preparer')?.value || "Б.Нарангэрэл";
+            const posVal = document.getElementById('input-position')?.value || "";
+            const rNameVal = document.getElementById('input-receiver-name')?.value || "ТУС Солюшн ХХК";
+            const rBankVal = document.getElementById('input-receiver-bank')?.value || "";
+            const rAccVal = document.getElementById('input-receiver-acc')?.value || "";
+            const nameVal = document.getElementById('input-name')?.value || "";
+
+            // Populate PDF
+            safeSetText('pdf-date', dateVal);
+            safeSetText('pdf-org', orgVal);
+            safeSetText('pdf-rd', rdVal);
+            safeSetText('pdf-due-date-val', dueVal);
+            safeSetText('pdf-receiver-name', rNameVal);
+            safeSetText('pdf-receiver-bank', rBankVal);
+            safeSetText('pdf-receiver-acc', rAccVal);
+            safeSetText('pdf-name', nameVal);
+            safeSetText('pdf-preparer', prepVal);
+            safeSetText('pdf-preparer-pos', posVal);
+            
+            safeSetText('pdf-raw-total', format(data.rawTotal));
+            safeSetText('pdf-vat-total', format(data.vatAmt));
+            const final = Math.round(data.finalTotal);
+            safeSetText('pdf-grand-total', format(final));
+            safeSetText('pdf-amount-words', numberToMongolianWords(final) + " төгрөг");
+
+            const volRow = document.getElementById('pdf-vol-disc-row');
+            if(data.volDiscount > 0) { 
+                if(volRow) volRow.style.display = 'flex'; 
+                safeSetText('pdf-vol-disc', `-${format(data.volDiscount)}`);
+            } else if(volRow) volRow.style.display = 'none';
+
+            const yearRow = document.getElementById('pdf-year-disc-row');
+            if(data.yearDiscount > 0) { 
+                if(yearRow) yearRow.style.display = 'flex'; 
+                safeSetText('pdf-year-disc', `-${format(data.yearDiscount)}`);
+            } else if(yearRow) yearRow.style.display = 'none';
+
+            const tbody = document.getElementById('pdf-table-items');
+            if(tbody) {
+                tbody.innerHTML = '';
+                ['Starter', 'Standard', 'Premium', 'Compliance'].forEach(p => {
+                    if (state[p] > 0) {
+                        tbody.innerHTML += `
+                            <tr style="border-bottom: 1px solid #F1F5F9;">
+                                <td style="padding: 12px; font-size: 11px; font-weight: 700; text-align: left; color: #1e293b; border-right: 1px solid #F1F5F9;">${p} багц ашиглах эрх</td>
+                                <td style="padding: 12px; text-align: center; font-size: 11px; color: #475569; border-right: 1px solid #F1F5F9;">${state.Months} сар</td>
+                                <td style="padding: 12px; text-align: center; font-size: 11px; color: #475569; border-right: 1px solid #F1F5F9;">${state[p]}</td>
+                                <td style="padding: 12px; text-align: right; font-size: 11px; color: #475569; border-right: 1px solid #F1F5F9;">${format(PRICES[p])}</td>
+                                <td style="padding: 12px; text-align: right; font-size: 11px; font-weight: 800; color: #000;">${format(state[p] * PRICES[p] * state.Months)}</td>
+                            </tr>`;
+                    }
+                });
+            }
+
+            const element = document.getElementById('pdf-content-to-capture');
+            const opt = { 
+                margin: 0, 
+                filename: `Invoice_${orgVal.replace(/\s+/g, '_')}.pdf`, 
+                image: { type: 'jpeg', quality: 1 }, 
+                html2canvas: { scale: 3, useCORS: true, letterRendering: true, scrollY: 0 }, 
+                jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' } 
+            };
+            
+            try { 
+                await html2pdf().set(opt).from(element).save(); 
+                closeModal(); 
+            } catch (err) { 
+                console.error("PDF generation failed:", err); 
+            }
+        }
+
+        function openPlanDetails(p) {
+            const d = DETAILS[p];
+            const body = document.getElementById('modal-body');
+            if(!body) return;
+            body.innerHTML = `
+                <div class="flex items-center gap-6 mb-10 text-left text-[#111]">
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm"><i data-lucide="${d.icon}" class="w-8 h-8 text-blue-600"></i></div>
+                    <div><h3 class="text-3xl font-black text-[#00103D] tracking-tight">${d.title}</h3><p class="text-blue-600 font-bold text-xs uppercase mt-1 tracking-widest">${d.desc}</p></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left text-xs">
+                    ${d.features.map(f => `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3 group hover:border-blue-300 transition-colors"><i data-lucide="check-circle" class="text-blue-600 w-4 h-4"></i><span class="font-bold text-slate-800 text-sm">${f}</span></div>`).join('')}
+                </div>`;
+            lucide.createIcons();
+            document.getElementById('main-modal').style.display = 'flex';
+        }
+
+        function closeModal() { 
+            const m = document.getElementById('main-modal');
+            if(m) m.style.display = 'none'; 
+        }
+    </script>
+</body>
+</html>
