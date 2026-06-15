@@ -101,6 +101,18 @@
               <input type="range" id="sld-Compliance" min="0" max="100" value="0" class="custom-slider" oninput="updateBySlider('Compliance',this.value)">
             </div>
 
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <button onclick="openPlanDetails('Guest')" class="font-bold text-slate-700 hover:text-blue-600 transition-colors underline decoration-slate-100 underline-offset-4">Guest багц</button>
+                  <div class="flex items-center text-xs text-slate-400 font-bold border-l pl-2 gap-1">₮ <input type="number" id="price-Guest" value="16500" oninput="updatePrice('Guest',this.value)" class="price-input"></div>
+                </div>
+                <input type="number" id="count-Guest" value="0" min="0" oninput="updateByInput('Guest',this.value)" class="count-input focus:outline-none">
+              </div>
+              <input type="range" id="sld-Guest" min="0" max="100" value="0" class="custom-slider" oninput="updateBySlider('Guest',this.value)">
+            </div>
+
+            <!-- Contract Months Slider -->
             <div class="p-6 rounded-[2rem] bg-blue-50 border-2 border-blue-100 shadow-sm space-y-6">
               <div class="flex justify-between items-center">
                 <label class="text-xs font-black text-blue-900 uppercase tracking-widest flex items-center gap-2">
@@ -347,15 +359,16 @@
 <script>
 // ── State ─────────────────────────────────────────────────────────────
 const state = {
-    counts:     { Starter:0, Standard:0, Premium:0, Compliance:0 },
-    unitPrices: { Starter:24000, Standard:33000, Premium:55000, Compliance:350000 },
+    counts:     { Starter:0, Standard:0, Premium:0, Compliance:0, Guest:0 },
+    unitPrices: { Starter:24000, Standard:33000, Premium:55000, Compliance:350000, Guest:16500 },
     months: 1
 };
 const PLAN_INFO = {
     Starter:    { title:'Starter',    icon:'rocket',       features:['Ажил модуль','7 хоног модуль','Хэрэглэгчийн профайл'] },
     Standard:   { title:'Standard',   icon:'sparkles',     features:['HR модуль','OKR Зорилго','Оношилгоо'] },
     Premium:    { title:'Premium',    icon:'zap',          features:['Чанартай зөвлөх','AI Чатбот','Бүх модулиуд'] },
-    Compliance: { title:'Compliance', icon:'shield-check', features:['AI GAP','Эрсдэл','Интеграци'] }
+    Compliance: { title:'Compliance', icon:'shield-check', features:['AI GAP','Эрсдэл','Интеграци'] },
+    Guest:      { title:'Guest',      icon:'user',         features:['Зочин хандах эрх','Тайлан харах','Хязгаарлагдмал горим'] }
 };
 
 // Re-entrancy guards
@@ -377,7 +390,6 @@ const fmt    = v  => new Intl.NumberFormat('mn-MN').format(Math.round(v)) + ' �
 const getV   = id => document.getElementById(id)?.value || '';
 const setTxt = (id,v) => { const e=document.getElementById(id); if(e) e.innerText=v; };
 const setVal = (id,v) => { const e=document.getElementById(id); if(e) e.value=v; };
-// FIX: showEl correctly toggles between the given display value and 'none'
 const showEl = (id,show,dv='flex') => { const e=document.getElementById(id); if(e) e.style.display=show?dv:'none'; };
 
 // ── Input handlers ────────────────────────────────────────────────────
@@ -397,7 +409,7 @@ function calculate() {
     container.innerHTML = '';
     let rawTotal=0, totalAccounts=0, hasSelection=false;
 
-    ['Starter','Standard','Premium','Compliance'].forEach(p => {
+    ['Starter','Standard','Premium','Compliance','Guest'].forEach(p => {
         if (state.counts[p] > 0) {
             const line = state.counts[p] * state.unitPrices[p] * state.months;
             rawTotal += line; totalAccounts += state.counts[p]; hasSelection = true;
@@ -459,15 +471,12 @@ function calculate() {
     }
 
     // ── Special split logic ───────────────────────────────────────────
-    // Only read split/paid values when chk-special is ON
     const isSpecial   = document.getElementById('chk-special')?.checked ?? false;
     const alreadyPaid = isSpecial ? (parseFloat(document.getElementById('input-already-paid')?.value) || 0) : 0;
     const splitPerc   = isSpecial ? (parseInt(document.getElementById('input-split-perc')?.value) || 100)   : 100;
 
-    // FIX: alreadyPaid must not exceed grandTotal
     const clampedPaid = Math.min(alreadyPaid, grandTotal);
     const balance     = grandTotal - clampedPaid;
-    // FIX: splitPerc applies to the remaining balance (after already-paid deduction)
     const dueNow      = balance * (splitPerc / 100);
     const remaining   = balance - dueNow;
     const hasSplit    = isSpecial && (splitPerc < 100 || clampedPaid > 0);
@@ -484,11 +493,14 @@ function calculate() {
         if (totalEl) totalEl.className='text-4xl font-black text-white tracking-tighter leading-none';
     }
     if (totalEl) totalEl.innerText = fmt(grandTotal);
-    setTxt('display-guests', String(totalAccounts));
+
+    // Free guest accounts logic (excluding Purchased Guest accounts from giving more free guests)
+    const paidMainAccounts = state.counts['Starter'] + state.counts['Standard'] + state.counts['Premium'] + state.counts['Compliance'];
+    setTxt('display-guests', String(paidMainAccounts));
 
     const result = { rawTotal, vAmt, vRate, yAmt, yRate, vatAmt, grandTotal, dueNow, remaining, splitPerc, alreadyPaid: clampedPaid, hasSplit };
 
-    // Auto-refresh open invoice preview (re-entrancy protected)
+    // Auto-refresh open invoice preview
     if (isInvoiceOpen && !_isRefreshing) {
         _isRefreshing = true;
         try {
@@ -514,17 +526,17 @@ function _syncPdf(d) {
     setTxt('pdf-vat-total-val',   fmt(d.vatAmt));
     setTxt('pdf-grand-total-val', fmt(d.grandTotal));
 
-    // VAT row: only show when vatAmt > 0
+    // VAT row
     showEl('pdf-vat-row', d.vatAmt > 0, 'flex');
 
-    // Volume discount row — show dynamically with correct percentage label
+    // Volume discount row
     showEl('pdf-row-v', d.vAmt > 0, 'flex');
     if (d.vAmt > 0) {
         setTxt('pdf-label-v', `Олон хэрэглэгчийн хөнгөлөлт (-${Math.round(d.vRate*100)}%):`);
         setTxt('pdf-val-v', `-${fmt(d.vAmt)}`);
     }
 
-    // Duration discount row — show dynamically with correct percentage label
+    // Duration discount row
     showEl('pdf-row-y', d.yAmt > 0, 'flex');
     if (d.yAmt > 0) {
         setTxt('pdf-label-y', `Хугацааны хөнгөлөлт (-${Math.round(d.yRate*100)}%):`);
@@ -535,7 +547,7 @@ function _syncPdf(d) {
     showEl('pdf-already-paid-row', d.alreadyPaid > 0, 'flex');
     if (d.alreadyPaid > 0) setTxt('pdf-already-paid-val', `-${fmt(d.alreadyPaid)}`);
 
-    // Amount in words + split block
+    // Amount in words
     if (d.hasSplit) {
         setTxt('pdf-word-label',   'Одоо төлөх дүн /үсгээр/:');
         setTxt('pdf-amount-words', toWords(Math.round(d.dueNow))+' төгрөг');
@@ -553,7 +565,7 @@ function _syncPdf(d) {
     const tbody = document.getElementById('pdf-table-items');
     if (tbody) {
         tbody.innerHTML = '';
-        ['Starter','Standard','Premium','Compliance'].forEach(p => {
+        ['Starter','Standard','Premium','Compliance','Guest'].forEach(p => {
             if (state.counts[p] > 0) {
                 const line = state.counts[p] * state.unitPrices[p] * state.months;
                 tbody.innerHTML +=
@@ -569,7 +581,7 @@ function _syncPdf(d) {
     }
 }
 
-// ── Clone PDF template, stripping all IDs (prevents DOM id conflicts) ─
+// ── Clone PDF template, stripping all IDs ─────────────────────────────
 function _cloneNoIds(sourceId) {
     const src = document.getElementById(sourceId);
     if (!src) return '';
@@ -665,7 +677,6 @@ function openPlanDetails(p) {
         </div>`;
     lucide.createIcons();
     document.getElementById('main-modal').style.display = 'flex';
-    // Note: openPlanDetails does NOT set isInvoiceOpen — intentional
 }
 
 // ── Mongolian number words ────────────────────────────────────────────
