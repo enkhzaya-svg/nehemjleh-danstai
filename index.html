@@ -49,8 +49,10 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-      <!-- LEFT: Sliders -->
+      <!-- LEFT: Sliders & Inputs -->
       <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Үндсэн багцууд -->
         <div class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-slate-200/50 border border-slate-50">
           <h3 class="text-xl font-black mb-10 flex items-center gap-3 text-[#00103D]">
             <i data-lucide="sliders" class="text-[#0047FF] w-6 h-6"></i> Багцаа сонгоно уу
@@ -125,6 +127,22 @@
           </div>
         </div>
 
+        <!-- Нэмэлт үйлчилгээ / Custom Items (ШИНЭЭР НЭМСЭН ХЭСЭГ) -->
+        <div class="bg-white rounded-[2rem] p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-slate-50">
+          <h4 class="text-sm font-black text-[#00103D] uppercase tracking-widest mb-5 flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-500"></i> Нэмэлт үйлчилгээ / Дүн
+          </h4>
+          <p class="text-xs text-slate-400 mb-4 font-medium">Өөрийн хүссэн нэр, үнэ, тоо хэмжээгээр нэмэлт зүйлс оруулах боломжтой.</p>
+          
+          <div id="custom-items-container" class="space-y-3 mb-4">
+            <!-- Custom items will be injected here -->
+          </div>
+          
+          <button onclick="addCustomItem()" class="w-full py-4 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 font-bold hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i> Шинээр нэмэх
+          </button>
+        </div>
+
         <!-- Discount control card -->
         <div class="bg-white rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 border border-slate-50">
           <h4 class="text-sm font-black text-[#00103D] uppercase tracking-widest mb-5 flex items-center gap-2">
@@ -178,8 +196,9 @@
 
       <!-- RIGHT: Results -->
       <div class="lg:col-span-5 text-left">
-        <div class="bg-[#00103D] text-white rounded-[3.5rem] p-8 md:p-10 shadow-2xl shadow-blue-900/40 flex flex-col min-h-[600px]">
+        <div class="bg-[#00103D] text-white rounded-[3.5rem] p-8 md:p-10 shadow-2xl shadow-blue-900/40 flex flex-col min-h-[600px] sticky top-8">
           <h3 class="text-sm font-black mb-10 border-b border-white/5 pb-6 uppercase tracking-widest text-slate-500 text-center">Захиалгын нэгтгэл</h3>
+          
           <div id="summary-container" class="space-y-3 mb-6">
             <p class="text-slate-500 text-center py-4 italic opacity-50 text-xs">Багцаа сонгоно уу...</p>
           </div>
@@ -312,7 +331,7 @@
         <tr style="background:#F8FAFC;border-bottom:2px solid #0047FF;">
           <th style="padding:12px;text-align:left;font-weight:800;text-transform:uppercase;">Үйлчилгээний нэр</th>
           <th style="padding:12px;text-align:center;font-weight:800;text-transform:uppercase;">Хугацаа /Сар/</th>
-          <th style="padding:12px;text-align:center;font-weight:800;text-transform:uppercase;">Тоо /Акк/</th>
+          <th style="padding:12px;text-align:center;font-weight:800;text-transform:uppercase;">Тоо /Ш/</th>
           <th style="padding:12px;text-align:right;font-weight:800;text-transform:uppercase;">Нэгж Үнэ</th>
           <th style="padding:12px;text-align:right;font-weight:800;text-transform:uppercase;">Нийт</th>
         </tr>
@@ -333,19 +352,19 @@
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px;">
           <span style="color:#64748B;">Суурь дүн:</span><span id="pdf-raw-total-val" style="font-weight:600;"></span>
         </div>
-        <!-- Volume discount row — hidden by default, shown when vAmt > 0 -->
+        <!-- Volume discount row -->
         <div id="pdf-row-v" style="display:none;justify-content:space-between;margin-bottom:6px;font-size:11px;color:#059669;">
           <span id="pdf-label-v" style="font-weight:600;">Олон хэрэглэгчийн хөнгөлөлт:</span><span id="pdf-val-v"></span>
         </div>
-        <!-- Duration discount row — hidden by default, shown when yAmt > 0 -->
+        <!-- Duration discount row -->
         <div id="pdf-row-y" style="display:none;justify-content:space-between;margin-bottom:6px;font-size:11px;color:#059669;">
           <span id="pdf-label-y" style="font-weight:600;">Хугацааны хөнгөлөлт:</span><span id="pdf-val-y"></span>
         </div>
-        <!-- Custom manual discount row — hidden by default, shown when cAmt > 0 -->
+        <!-- Custom manual discount row -->
         <div id="pdf-row-c" style="display:none;justify-content:space-between;margin-bottom:6px;font-size:11px;color:#d97706;">
           <span id="pdf-label-c" style="font-weight:600;color:#d97706;">Тусгай хөнгөлөлт:</span><span id="pdf-val-c" style="font-weight:600;"></span>
         </div>
-        <!-- VAT row — hidden by default, shown when vatAmt > 0 -->
+        <!-- VAT row -->
         <div id="pdf-vat-row" style="display:none;justify-content:space-between;margin-bottom:6px;font-size:11px;">
           <span style="color:#64748B;">НӨАТ (10%):</span><span id="pdf-vat-total-val" style="font-weight:600;"></span>
         </div>
@@ -353,7 +372,7 @@
           <span style="font-weight:800;font-size:12px;color:#333;">НИЙТ ГЭРЭЭНИЙ ДҮН:</span>
           <span id="pdf-grand-total-val" style="font-weight:800;font-size:12px;color:#333;"></span>
         </div>
-        <!-- Already-paid row — hidden by default -->
+        <!-- Already-paid row -->
         <div id="pdf-already-paid-row" style="display:none;justify-content:space-between;margin-bottom:6px;font-size:11px;color:#ef4444;border-top:1px dashed #EEE;padding-top:5px;">
           <span style="font-weight:600;">Өмнө төлсөн дүн:</span><span id="pdf-already-paid-val" style="font-weight:700;"></span>
         </div>
@@ -394,6 +413,7 @@ const PLAN_INFO = {
 // Re-entrancy guards
 let isInvoiceOpen = false;
 let _isRefreshing = false;
+let customItemIdCounter = 0;
 
 // ── Init ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -419,6 +439,37 @@ function updateByInput(p,v)  { state.counts[p]=Math.max(0,parseInt(v)||0); const
 function updateMonths(v)     { state.months=parseInt(v); setTxt('val-Months', v>=12?(v/12).toFixed(1).replace('.0','')+' Жил':v+' Сар'); calculate(); }
 function toggleSpecialSettings() { const c=document.getElementById('chk-special'); document.getElementById('special-settings-area')?.classList.toggle('hidden',!c?.checked); calculate(); }
 
+// ── Custom Items Handlers ─────────────────────────────────────────────
+function addCustomItem() {
+    const id = `custom-item-${customItemIdCounter++}`;
+    const container = document.getElementById('custom-items-container');
+    const div = document.createElement('div');
+    div.className = 'flex flex-wrap md:flex-nowrap items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200';
+    div.id = id;
+    div.innerHTML = `
+        <input type="text" placeholder="Үйлчилгээний нэр (жишээ: Сургалт)" class="custom-name w-full md:flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-400" oninput="calculate()">
+        <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="number" placeholder="Тоо" value="1" min="1" class="custom-qty w-16 bg-white border border-slate-200 rounded-lg px-2 py-2 text-center text-xs font-bold focus:outline-none focus:border-blue-400" oninput="calculate()">
+            <div class="flex flex-1 items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-2 focus-within:border-blue-400">
+                <input type="number" placeholder="Нэгж үнэ" value="0" min="0" class="custom-price w-full md:w-24 text-right bg-transparent border-none text-xs font-bold focus:outline-none" oninput="calculate()">
+                <span class="text-xs text-slate-400 font-bold">₮</span>
+            </div>
+            <button onclick="removeCustomItem('${id}')" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0" title="Устгах">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(div);
+    lucide.createIcons();
+    calculate();
+}
+
+function removeCustomItem(id) {
+    const el = document.getElementById(id);
+    if(el) el.remove();
+    calculate();
+}
+
 // ── Core calculation ──────────────────────────────────────────────────
 function calculate() {
     const container = document.getElementById('summary-container');
@@ -428,7 +479,9 @@ function calculate() {
 
     container.innerHTML = '';
     let rawTotal=0, totalAccounts=0, hasSelection=false;
+    const customItemsList = [];
 
+    // Багцуудын тооцоолол
     ['Starter','Standard','Premium','Compliance','Guest'].forEach(p => {
         if (state.counts[p] > 0) {
             const line = state.counts[p] * state.unitPrices[p] * state.months;
@@ -441,8 +494,33 @@ function calculate() {
         }
     });
 
+    // Нэмэлт үйлчилгээнүүдийн тооцоолол
+    const customRows = document.querySelectorAll('#custom-items-container > div');
+    customRows.forEach(row => {
+        const nameInput = row.querySelector('.custom-name');
+        const qtyInput = row.querySelector('.custom-qty');
+        const priceInput = row.querySelector('.custom-price');
+        
+        const name = nameInput ? (nameInput.value || 'Нэмэлт үйлчилгээ') : 'Нэмэлт үйлчилгээ';
+        const qty = qtyInput ? (parseInt(qtyInput.value) || 0) : 0;
+        const price = priceInput ? (parseFloat(priceInput.value) || 0) : 0;
+
+        if (qty > 0 && price > 0) {
+            const line = qty * price;
+            rawTotal += line;
+            hasSelection = true;
+            customItemsList.push({ name, qty, price, line });
+
+            container.innerHTML +=
+                `<div class="flex justify-between items-center text-sm font-medium border-t border-white/5 pt-2 mt-2">
+                    <span class="text-emerald-400/80">${name} (${qty} ш):</span>
+                    <span class="text-white font-mono">${fmt(line)}</span>
+                </div>`;
+        }
+    });
+
     if (!hasSelection) {
-        container.innerHTML='<p class="text-slate-500 text-center py-4 italic opacity-50 text-xs">Багцаа сонгоно уу...</p>';
+        container.innerHTML='<p class="text-slate-500 text-center py-4 italic opacity-50 text-xs">Багц эсвэл үйлчилгээ сонгоно уу...</p>';
         inputs?.classList.add('hidden');
         document.getElementById('btn-demo').classList.remove('hidden');
         document.getElementById('btn-view').classList.add('hidden');
@@ -459,19 +537,19 @@ function calculate() {
     const isVolumeOn   = document.getElementById('chk-volume-discount')?.checked ?? true;
     const isDurationOn = document.getElementById('chk-duration-discount')?.checked ?? true;
 
-    // Volume (multi-user) discount: only applied when toggle is ON
+    // Volume discount: Үндсэн багцын аккаунт тоогоор (нэмэлт үйлчилгээ хамаарахгүй)
     const vRate = isVolumeOn
         ? (totalAccounts>=300 ? 0.30 : totalAccounts>=200 ? 0.20 : totalAccounts>=100 ? 0.10 : 0)
         : 0;
-    const vAmt  = rawTotal * vRate;
+    const vAmt  = rawTotal * vRate; 
     const subV  = rawTotal - vAmt;
 
-    // Duration discount: 18% for 12+ months, only when toggle is ON
+    // Duration discount
     const yRate = (isDurationOn && state.months >= 12) ? 0.18 : 0;
     const yAmt  = subV * yRate;
     const subFinal = subV - yAmt;
 
-    // Custom manually input discount (percentage)
+    // Custom manually input discount
     const customRateVal = parseFloat(document.getElementById('input-custom-discount')?.value) || 0;
     const customRate = Math.min(100, Math.max(0, customRateVal)) / 100;
     const cAmt = subFinal * customRate;
@@ -484,7 +562,7 @@ function calculate() {
 
     // ── Sidebar discount badges ───────────────────────────────────────
     if (vAmt > 0) {
-        container.innerHTML += `<div class="p-2 bg-blue-500/10 rounded-xl text-blue-400 text-[9px] font-black flex justify-between mt-2">
+        container.innerHTML += `<div class="p-2 bg-blue-500/10 rounded-xl text-blue-400 text-[9px] font-black flex justify-between mt-3">
             <span>Олон хэрэглэгч (-${Math.round(vRate*100)}%):</span><span>-${fmt(vAmt)}</span></div>`;
     }
     if (yAmt > 0) {
@@ -524,13 +602,11 @@ function calculate() {
     }
     if (totalEl) totalEl.innerText = fmt(grandTotal);
 
-    // Free guest accounts logic (excluding Purchased Guest accounts from giving more free guests)
     const paidMainAccounts = state.counts['Starter'] + state.counts['Standard'] + state.counts['Premium'] + state.counts['Compliance'];
     setTxt('display-guests', String(paidMainAccounts));
 
-    const result = { rawTotal, vAmt, vRate, yAmt, yRate, cAmt, customRate, vatAmt, grandTotal, dueNow, remaining, splitPerc, alreadyPaid: clampedPaid, hasSplit };
+    const result = { rawTotal, vAmt, vRate, yAmt, yRate, cAmt, customRate, vatAmt, grandTotal, dueNow, remaining, splitPerc, alreadyPaid: clampedPaid, hasSplit, customItems: customItemsList };
 
-    // Auto-refresh open invoice preview
     if (isInvoiceOpen && !_isRefreshing) {
         _isRefreshing = true;
         try {
@@ -602,6 +678,8 @@ function _syncPdf(d) {
     const tbody = document.getElementById('pdf-table-items');
     if (tbody) {
         tbody.innerHTML = '';
+        
+        // Үндсэн багцууд
         ['Starter','Standard','Premium','Compliance','Guest'].forEach(p => {
             if (state.counts[p] > 0) {
                 const line = state.counts[p] * state.unitPrices[p] * state.months;
@@ -615,6 +693,20 @@ function _syncPdf(d) {
                     </tr>`;
             }
         });
+
+        // Нэмэлт үйлчилгээнүүд (ШИНЭ)
+        if (d.customItems && d.customItems.length > 0) {
+            d.customItems.forEach(item => {
+                tbody.innerHTML +=
+                    `<tr>
+                        <td style="padding:12px;border-bottom:1px solid #F1F5F9;">${item.name}</td>
+                        <td style="padding:12px;border-bottom:1px solid #F1F5F9;text-align:center;color:#94A3B8;">-</td>
+                        <td style="padding:12px;border-bottom:1px solid #F1F5F9;text-align:center;">${item.qty}</td>
+                        <td style="padding:12px;border-bottom:1px solid #F1F5F9;text-align:right;">${fmt(item.price)}</td>
+                        <td style="padding:12px;border-bottom:1px solid #F1F5F9;text-align:right;font-weight:800;">${fmt(item.line)}</td>
+                    </tr>`;
+            });
+        }
     }
 }
 
@@ -660,7 +752,6 @@ function showInvoicePreview() {
     isInvoiceOpen = true;
 }
 
-// Lightweight refresh — only updates the preview content div
 function refreshPreviewIfOpen() {
     if (!isInvoiceOpen || _isRefreshing) return;
     _isRefreshing = true;
